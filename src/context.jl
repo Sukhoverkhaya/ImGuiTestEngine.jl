@@ -368,6 +368,67 @@ MouseMoveToPos(pos::ig.ImVec2, ctx=nothing) = MouseMoveToPos(pos.x, pos.y, ctx)
 MouseMoveToPos(pos::NTuple{2, Real}, ctx=nothing) = MouseMoveToPos(pos[1], pos[2], ctx)
 
 """
+Down the mouse to the current position (and hold before realise).
+
+# Examples
+```julia
+@register_test(engine, "foo", "bar") do ctx
+    MouseMoveToPos(100, 100)
+    MouseDown(ig.ImGuiMouseButton_Right)
+end
+```
+"""
+function MouseDown(button::ig.ImGuiMouseButton_ = ig.ImGuiMouseButton_Left, ctx=nothing)
+    @_default_ctx
+    lib.MouseDown(ctx, Int(button))
+end
+
+"""
+Up the mouse if it's down (e.g. after [`MouseDown()`](@ref `MouseDown`))
+
+# Examples
+```julia
+@register_test(engine, "foo", "bar") do ctx
+    MouseMoveToPos(100, 100)
+    MouseDown(ig.ImGuiMouseButton_Right)
+end
+"""
+function MouseUp(button::ig.ImGuiMouseButton_ = ig.ImGuiMouseButton_Left, ctx=nothing)
+    @_default_ctx
+    lib.MouseUp(ctx, Int(button))
+end
+
+"""
+Down the mouse and drag before up with delta in absolute coordinates.
+
+# Examples
+```julia
+@register_test(engine, "foo", "bar") do ctx
+    MouseMoveToPos(100, 100)
+    MouseDragWithDelta(50, 50, ig.ImGuiMouseButton_Right)
+    MouseDragWithDelta((50, 50), ig.ImGuiMouseButton_Right)
+    MouseDragWithDelta(ig.ImVec2(50, 50), ig.ImGuiMouseButton_Right)
+end
+"""
+function MouseDragWithDelta(x, y, button::ig.ImGuiMouseButton_ = ig.ImGuiMouseButton_Left, ctx=nothing)
+    @_default_ctx
+    pos = ig.GetMousePos()
+    lib.MouseDown(ctx, Int(button))
+    lib.MouseMoveToPos(ctx, mkImVec2(pos.x + x, pos.y + y))
+    lib.MouseUp(ctx, Int(button))
+end
+
+"$(TYPEDSIGNATURES)"
+function MouseDragWithDelta(delta::NTuple{2, Real}, button::ig.ImGuiMouseButton_ = ig.ImGuiMouseButton_Left, ctx=nothing)
+    MouseDragWithDelta(delta[1], delta[2], button, ctx)
+end
+
+"$(TYPEDSIGNATURES)"
+function MouseDragWithDelta(delta::ig.ImVec2, button::ig.ImGuiMouseButton_ = ig.ImGuiMouseButton_Left, ctx=nothing)
+    MouseDragWithDelta(delta.x, delta.y, button, ctx)
+end
+
+"""
 $(TYPEDSIGNATURES)
 
 Register a click of `button`.
